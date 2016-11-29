@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
 	// g_type_init();
 	dbus_init();
 
-	Adapter *adapter = find_adapter(adapter_arg, &error);
+	Adapter *adapter = find_adapter(NULL, &error);
 	exit_if_error(error);
 
 	adapter_set_discoverable(adapter, g_variant_get_boolean(TRUE), &error);

@@ -9,6 +9,7 @@
 #include <config.h>
 #endif
 
+#include <glib/gstdio.h>
 #include <gio/gio.h>
 #include <glib.h>
 #include <locale.h>
