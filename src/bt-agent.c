@@ -165,12 +165,6 @@ int main(int argc, char *argv[])
 	// g_type_init();
 	dbus_init();
 
-	Adapter *adapter = find_adapter(NULL, &error);
-	exit_if_error(error);
-
-	adapter_set_discoverable(adapter, g_variant_get_boolean(TRUE), &error);
-	exit_if_error(error);
-
 	context = g_option_context_new(" - a bluetooth agent");
 	g_option_context_add_main_entries(context, entries, NULL);
 	g_option_context_set_summary(context, "Version "PACKAGE_VERSION);
@@ -232,6 +226,12 @@ int main(int argc, char *argv[])
 
 	Manager *manager = g_object_new(MANAGER_TYPE, NULL);
         
+	Adapter *adapter = find_adapter(NULL, &error);
+        exit_if_error(error);
+
+        adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), &error);
+    //    exit_if_error(error);
+
         AgentManager *agent_manager = agent_manager_new();
 
         if(daemon_arg)
