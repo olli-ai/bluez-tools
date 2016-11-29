@@ -161,9 +161,15 @@ int main(int argc, char *argv[])
 	/* Query current locale */
 	setlocale(LC_CTYPE, "");
 
-        // Deprecated
+	// Deprecated
 	// g_type_init();
 	dbus_init();
+
+	Adapter *adapter = find_adapter(adapter_arg, &error);
+	exit_if_error(error);
+
+	adapter_set_discoverable(adapter, g_variant_get_boolean(TRUE), &error);
+	exit_if_error(error);
 
 	context = g_option_context_new(" - a bluetooth agent");
 	g_option_context_add_main_entries(context, entries, NULL);
