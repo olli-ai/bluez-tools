@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
         exit_if_error(error);
 
         adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), &error);
-    //    exit_if_error(error);
+	exit_if_error(error);
 
         AgentManager *agent_manager = agent_manager_new();
 
