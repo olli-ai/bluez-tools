@@ -47,6 +47,38 @@ static GMainLoop *mainloop = NULL;
 static GHashTable *pin_hash_table = NULL;
 static gchar *pin_arg = NULL;
 
+static void _manager_device_found(GDBusConnection *connection, const gchar *sender_name, const gchar *object_path, const gchar *interface_name, const gchar *signal_name, GVariant *parameters, gpointer user_data)
+{
+    g_assert(user_data != NULL);
+    const gchar *adapter_object_path = user_data;
+
+    GVariant *arg0 = g_variant_get_child_value(parameters, 0);
+    const gchar *str_object_path = g_variant_get_string(arg0, NULL);
+    g_variant_unref(arg0);
+
+    if (!g_str_has_prefix(str_object_path, adapter_object_path))
+        return;
+
+    GVariant *interfaces_and_properties = g_variant_get_child_value(parameters, 1);
+    GVariant *properties = NULL;
+    if (g_variant_lookup(interfaces_and_properties, DEVICE_DBUS_INTERFACE, "@a{sv}", &properties))
+    {
+        g_print("[%s]\n", g_variant_get_string(g_variant_lookup_value(properties, "Address", NULL), NULL));
+        g_print("  Name: %s\n", g_variant_lookup_value(properties, "Name", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(properties, "Name", NULL), NULL) : NULL);
+        g_print("  Alias: %s\n", g_variant_lookup_value(properties, "Alias", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(properties, "Alias", NULL), NULL) : NULL);
+        g_print("  Address: %s\n", g_variant_lookup_value(properties, "Address", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(properties, "Address", NULL), NULL) : NULL);
+        g_print("  Icon: %s\n", g_variant_lookup_value(properties, "Icon", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(properties, "Icon", NULL), NULL) : NULL);
+        g_print("  Class: 0x%x\n", g_variant_lookup_value(properties, "Class", NULL) != NULL ? g_variant_get_uint32(g_variant_lookup_value(properties, "Class", NULL)) : 0x0);
+        g_print("  LegacyPairing: %d\n", g_variant_lookup_value(properties, "LegacyPairing", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(properties, "LegacyPairing", NULL)) : FALSE);
+        g_print("  Paired: %d\n", g_variant_lookup_value(properties, "Paired", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(properties, "Paired", NULL)) : FALSE);
+        g_print("  RSSI: %d\n", g_variant_lookup_value(properties, "RSSI", NULL) != NULL ? g_variant_get_int16(g_variant_lookup_value(properties, "RSSI", NULL)) : 0x0);
+        g_print("\n");
+
+        g_variant_unref(properties);
+    }
+    g_variant_unref(interfaces_and_properties);
+}
+
 // Not touching this for now. It seems to work.
 static void _read_pin_file(const gchar *filename, GHashTable *pin_hash_table, gboolean first_run)
 {
@@ -225,22 +257,25 @@ int main(int argc, char *argv[])
 	mainloop = g_main_loop_new(NULL, FALSE);
 
 	Manager *manager = g_object_new(MANAGER_TYPE, NULL);
-        
+	
 	Adapter *adapter = find_adapter(NULL, &error);
-        exit_if_error(error);
-
-        adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), &error);
 	exit_if_error(error);
 
-        AgentManager *agent_manager = agent_manager_new();
+	adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), &error);
+	exit_if_error(error);
 
-        if(daemon_arg)
-            register_agent_callbacks(FALSE, pin_hash_table, mainloop, &error);
-        else
-            register_agent_callbacks(TRUE, pin_hash_table, mainloop, &error);
-        
-        exit_if_error(error);
-        
+	guint object_sig_sub_id = g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.ObjectManager", "InterfacesAdded", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE, _manager_device_found, (gpointer) adapter_get_dbus_object_path(adapter), NULL);
+    exit_if_error(error);
+
+	AgentManager *agent_manager = agent_manager_new();
+
+	if(daemon_arg)
+		register_agent_callbacks(FALSE, pin_hash_table, mainloop, &error);
+	else
+		register_agent_callbacks(TRUE, pin_hash_table, mainloop, &error);
+
+	exit_if_error(error);
+
         agent_manager_register_agent(agent_manager, AGENT_PATH, capability_arg, &error);
 	exit_if_error(error);
 	g_print("Agent registered\n");
