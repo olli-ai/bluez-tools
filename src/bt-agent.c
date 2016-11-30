@@ -96,8 +96,6 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 	    GVariant *connected_variant = g_variant_lookup_value(changed_properties, "Connected", NULL);
 
 		g_print("  Connected: %d\n", g_variant_lookup_value(changed_properties, "Connected", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(changed_properties, "Connected", NULL)) : FALSE);
-    	g_print("[%s]\n", g_variant_get_string(g_variant_lookup_value(changed_properties, "Address", NULL), NULL));
-        g_print("[%s]\n", g_variant_get_string(g_variant_lookup_value(changed_properties, "Address", NULL), NULL));
         g_print("  Name: %s\n", g_variant_lookup_value(changed_properties, "Name", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(changed_properties, "Name", NULL), NULL) : NULL);
         g_print("  Alias: %s\n", g_variant_lookup_value(changed_properties, "Alias", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(changed_properties, "Alias", NULL), NULL) : NULL);
         g_print("  Address: %s\n", g_variant_lookup_value(changed_properties, "Address", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(changed_properties, "Address", NULL), NULL) : NULL);
