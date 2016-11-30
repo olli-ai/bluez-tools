@@ -89,13 +89,13 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
     const gchar *str_object_path = g_variant_get_string(arg0, NULL);
     g_variant_unref(arg0);
 
-    // g_print("%s:%s\n", __FUNCTION__, str_object_path);
+    g_print("%s:%s\n", __FUNCTION__, str_object_path);
     if (g_strcmp0(str_object_path, DEVICE_DBUS_INTERFACE) == 0)
     {
 		GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
 	 
 		g_print("  Connected: %d\n", g_variant_lookup_value(changed_properties, "Connected", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(changed_properties, "Connected", NULL)) : FALSE);
-        g_print("  Name: %s\n", g_variant_get_string(g_variant_lookup_value(changed_properties, "Name", NULL), NULL));
+		g_print("  Name: %s\n", g_variant_lookup_value(changed_properties, "Name", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(changed_properties, "Name", NULL), NULL) : NULL);
         g_print("  Alias: %s\n", g_variant_lookup_value(changed_properties, "Alias", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(changed_properties, "Alias", NULL), NULL) : NULL);
         g_print("  Address: %s\n", g_variant_lookup_value(changed_properties, "Address", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(changed_properties, "Address", NULL), NULL) : NULL);
         g_print("  Icon: %s\n", g_variant_lookup_value(changed_properties, "Icon", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(changed_properties, "Icon", NULL), NULL) : NULL);
@@ -106,35 +106,6 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
         g_print("\n");
 		g_variant_unref(changed_properties);
     }
-
-
-    #if 0
-    GVariant *properties = NULL;
-    if (g_variant_lookup(changed_properties, DEVICE_DBUS_INTERFACE, "@a{sv}", &properties))
-    {
-    	g_print("%s:%d\n", __FUNCTION__,__LINE__);
-		g_print("  Connected: %d\n", g_variant_lookup_value(properties, "Connected", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(properties, "Connected", NULL)) : FALSE);
-    	// g_print("[%s]\n", g_variant_get_string(g_variant_lookup_value(properties, "Address", NULL), NULL));
-        // g_print("[%s]\n", g_variant_get_string(g_variant_lookup_value(properties, "Address", NULL), NULL));
-        // g_print("  Name: %s\n", g_variant_lookup_value(properties, "Name", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(properties, "Name", NULL), NULL) : NULL);
-        // g_print("  Alias: %s\n", g_variant_lookup_value(properties, "Alias", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(properties, "Alias", NULL), NULL) : NULL);
-        // g_print("  Address: %s\n", g_variant_lookup_value(properties, "Address", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(properties, "Address", NULL), NULL) : NULL);
-        // g_print("  Icon: %s\n", g_variant_lookup_value(properties, "Icon", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(properties, "Icon", NULL), NULL) : NULL);
-        // g_print("  Class: 0x%x\n", g_variant_lookup_value(properties, "Class", NULL) != NULL ? g_variant_get_uint32(g_variant_lookup_value(properties, "Class", NULL)) : 0x0);
-        // g_print("  LegacyPairing: %d\n", g_variant_lookup_value(properties, "LegacyPairing", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(properties, "LegacyPairing", NULL)) : FALSE);
-        // g_print("  Paired: %d\n", g_variant_lookup_value(properties, "Paired", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(properties, "Paired", NULL)) : FALSE);
-        // g_print("  RSSI: %d\n", g_variant_lookup_value(properties, "RSSI", NULL) != NULL ? g_variant_get_int16(g_variant_lookup_value(properties, "RSSI", NULL)) : 0x0);
-        g_print("\n");
-
-        g_variant_unref(properties);
-    }
-    else
-    {
-	    g_print("%s:%d\n", __FUNCTION__,__LINE__);
-	    g_print("  Connected: %d\n", g_variant_lookup_value(properties, "Connected", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(properties, "Connected", NULL)) : FALSE);
-
-    }
-    #endif
 }
 
 // Not touching this for now. It seems to work.
