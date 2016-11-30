@@ -82,15 +82,24 @@ static void _manager_device_found(GDBusConnection *connection, const gchar *send
 
 static void _adapter_property_changed(GDBusConnection *connection, const gchar *sender_name, const gchar *object_path, const gchar *interface_name, const gchar *signal_name, GVariant *parameters, gpointer user_data)
 {
-    // g_assert(user_data != NULL);
+    g_assert(user_data != NULL);
     GMainLoop *mainloop = user_data;
     
     GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
-	
-	gchar *connected = NULL;
-    g_variant_lookup(changed_properties, "Connected", "s", &connected);
-    g_print("[%s]: %s\n",__FUNCTION__, connected);
-
+    GVariant *connected_variant = g_variant_lookup_value(changed_properties, "Connected", NULL);
+    if(connected_variant)
+    {
+        const gboolean connected = g_variant_get_boolean(connected_variant);
+        if(!connected)
+        {
+            g_print("disconnected\n");
+        }
+        else
+        {
+        	g_print("connected\n");	
+        }
+        g_variant_unref(connected_variant);
+    }
     g_variant_unref(changed_properties);
 }
 
