@@ -130,6 +130,10 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 
         g_variant_unref(properties);
     }
+    else
+    {
+	    g_print("%s:%d\n", __FUNCTION__,__LINE__);
+    }
     
     g_variant_unref(changed_properties);
 }
