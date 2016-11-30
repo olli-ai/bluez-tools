@@ -97,7 +97,7 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
         else
         {
         	adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), NULL);
-        	adapter_set_pairable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), NULL)
+        	adapter_set_pairable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), NULL);
         	g_print("connected\n");	
         }
         g_variant_unref(connected_variant);
