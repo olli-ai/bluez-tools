@@ -82,23 +82,22 @@ static void _manager_device_found(GDBusConnection *connection, const gchar *send
 
 static void _adapter_property_changed(GDBusConnection *connection, const gchar *sender_name, const gchar *object_path, const gchar *interface_name, const gchar *signal_name, GVariant *parameters, gpointer user_data)
 {
-    // g_assert(user_data != NULL);
-    // GMainLoop *mainloop = user_data;
+    g_assert(user_data != NULL);
+    GMainLoop *mainloop = user_data;
     
-    // GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
-    // GVariant *discovering_variant = g_variant_lookup_value(changed_properties, "Discovering", NULL);
-    // if(discovering_variant)
-    // {
-    //     const gboolean discovering = g_variant_get_boolean(discovering_variant);
-    //     if(!discovering)
-    //     {
-    //         g_main_loop_quit(mainloop);
-    //     }
-    //     g_variant_unref(discovering_variant);
-    // }
-    // g_variant_unref(changed_properties);
-
-    g_print("%s\r\n", __FUNCTION__);
+     g_print("[%s]\n",__FUNCTION__);
+    GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
+    GVariant *discovering_variant = g_variant_lookup_value(changed_properties, "Discovering", NULL);
+    if(discovering_variant)
+    {
+        const gboolean discovering = g_variant_get_boolean(discovering_variant);
+        if(!discovering)
+        {
+            g_main_loop_quit(mainloop);
+        }
+        g_variant_unref(discovering_variant);
+    }
+    g_variant_unref(changed_properties);
 }
 
 // Not touching this for now. It seems to work.
@@ -289,7 +288,7 @@ int main(int argc, char *argv[])
 	guint object_sig_sub_id = g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.ObjectManager", "InterfacesAdded", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE, _manager_device_found, (gpointer) adapter_get_dbus_object_path(adapter), NULL);
     exit_if_error(error);
 
-	guint prop_sig_sub_id = g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.Properties", "PropertiesChanged", adapter_get_dbus_object_path(adapter), NULL, G_DBUS_SIGNAL_FLAGS_NONE, _adapter_property_changed, NULL, NULL);
+	guint prop_sig_sub_id = g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.Properties", "PropertiesChanged", adapter_get_dbus_object_path(adapter), NULL, G_DBUS_SIGNAL_FLAGS_NONE, _adapter_property_changed, mainloop, NULL);
     exit_if_error(error);
 
 	AgentManager *agent_manager = agent_manager_new();
