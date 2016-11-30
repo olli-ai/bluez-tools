@@ -85,18 +85,18 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
     // g_assert(user_data != NULL);
     GMainLoop *mainloop = user_data;
     
-     g_print("[%s]\n",__FUNCTION__);
     GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
-    GVariant *discovering_variant = g_variant_lookup_value(changed_properties, "Discovering", NULL);
-    if(discovering_variant)
-    {
-        const gboolean discovering = g_variant_get_boolean(discovering_variant);
-        if(!discovering)
-        {
-            // g_main_loop_quit(mainloop);
-        }
-        g_variant_unref(discovering_variant);
-    }
+	g_print("[%s]: %s\n",__FUNCTION__, changed_properties);
+    // GVariant *discovering_variant = g_variant_lookup_value(changed_properties, "Discovering", NULL);
+    // if(discovering_variant)
+    // {
+    //     const gboolean discovering = g_variant_get_boolean(discovering_variant);
+    //     if(!discovering)
+    //     {
+    //         // g_main_loop_quit(mainloop);
+    //     }
+    //     g_variant_unref(discovering_variant);
+    // }
     g_variant_unref(changed_properties);
 }
 
