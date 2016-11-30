@@ -92,26 +92,31 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
     g_print("%s:%s\n", __FUNCTION__, str_object_path);
 
     GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
-    // GVariant *connected_variant = g_variant_lookup_value(changed_properties, "Connected", NULL);
-    // if(connected_variant)
-    // {
-    //     const gboolean connected = g_variant_get_boolean(connected_variant);
-    //     if(!connected)
-    //     {
-    //         g_print("disconnected\n");
-    //     	adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL);
-    //     	adapter_set_pairable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL);
-    //     }
-    //     else
-    //     {
-    //     	adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), NULL);
-    //     	adapter_set_pairable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), NULL);
-    //     	g_print("connected\n");	
-    //     }
-    //     g_variant_unref(connected_variant);
-    // }
+    if (g_strcmp0(str_object_path, DEVICE_DBUS_INTERFACE) == 0)
+    {
+	    GVariant *connected_variant = g_variant_lookup_value(changed_properties, "Connected", NULL);
+        if(connected_variant)
+	    {
+	        const gboolean connected = g_variant_get_boolean(connected_variant);
+	        if(!connected)
+	        {
+	            g_print("disconnected\n");
+	        	// adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL);
+	        	// adapter_set_pairable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL);
+	        }
+	        else
+	        {
+	        	// adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), NULL);
+	        	// adapter_set_pairable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), NULL);
+	        	g_print("connected\n");	
+	        }
+	        g_variant_unref(connected_variant);
+	    }
+
+    }
 
 
+    #if 0
     GVariant *properties = NULL;
     if (g_variant_lookup(changed_properties, DEVICE_DBUS_INTERFACE, "@a{sv}", &properties))
     {
@@ -137,7 +142,8 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 	    g_print("  Connected: %d\n", g_variant_lookup_value(properties, "Connected", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(properties, "Connected", NULL)) : FALSE);
 
     }
-    
+    #endif
+
     g_variant_unref(changed_properties);
 }
 
