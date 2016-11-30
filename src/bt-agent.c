@@ -89,19 +89,33 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
     const gchar *str_object_path = g_variant_get_string(arg0, NULL);
     g_variant_unref(arg0);
 
-    g_print("%s:%s\n", __FUNCTION__, str_object_path);
-
-    GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
+    // g_print("%s:%s\n", __FUNCTION__, str_object_path);
     if (g_strcmp0(str_object_path, DEVICE_DBUS_INTERFACE) == 0)
     {
+		GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
 	    GVariant *connected_variant = g_variant_lookup_value(changed_properties, "Connected", NULL);
+
+		g_print("  Connected: %d\n", g_variant_lookup_value(changed_properties, "Connected", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(changed_properties, "Connected", NULL)) : FALSE);
+    	g_print("[%s]\n", g_variant_get_string(g_variant_lookup_value(changed_properties, "Address", NULL), NULL));
+        g_print("[%s]\n", g_variant_get_string(g_variant_lookup_value(changed_properties, "Address", NULL), NULL));
+        g_print("  Name: %s\n", g_variant_lookup_value(changed_properties, "Name", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(changed_properties, "Name", NULL), NULL) : NULL);
+        g_print("  Alias: %s\n", g_variant_lookup_value(changed_properties, "Alias", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(changed_properties, "Alias", NULL), NULL) : NULL);
+        g_print("  Address: %s\n", g_variant_lookup_value(changed_properties, "Address", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(changed_properties, "Address", NULL), NULL) : NULL);
+        g_print("  Icon: %s\n", g_variant_lookup_value(changed_properties, "Icon", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(changed_properties, "Icon", NULL), NULL) : NULL);
+        g_print("  Class: 0x%x\n", g_variant_lookup_value(changed_properties, "Class", NULL) != NULL ? g_variant_get_uint32(g_variant_lookup_value(changed_properties, "Class", NULL)) : 0x0);
+        g_print("  LegacyPairing: %d\n", g_variant_lookup_value(changed_properties, "LegacyPairing", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(changed_properties, "LegacyPairing", NULL)) : FALSE);
+        g_print("  Paired: %d\n", g_variant_lookup_value(changed_properties, "Paired", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(changed_properties, "Paired", NULL)) : FALSE);
+        g_print("  RSSI: %d\n", g_variant_lookup_value(changed_properties, "RSSI", NULL) != NULL ? g_variant_get_int16(g_variant_lookup_value(changed_properties, "RSSI", NULL)) : 0x0);
+        g_print("\n");
+
         if(connected_variant)
 	    {
 	        const gboolean connected = g_variant_get_boolean(connected_variant);
+
 	        if(!connected)
 	        {
 	            g_print("disconnected\n");
-	        	// adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL);
+	        	// adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL)
 	        	// adapter_set_pairable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL);
 	        }
 	        else
