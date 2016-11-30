@@ -87,23 +87,23 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
     
     GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
     GVariant *connected_variant = g_variant_lookup_value(changed_properties, "Connected", NULL);
-    if(connected_variant)
-    {
-        const gboolean connected = g_variant_get_boolean(connected_variant);
-        if(!connected)
-        {
-            g_print("disconnected\n");
-        	adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL);
-        	adapter_set_pairable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL);
-        }
-        else
-        {
-        	adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), NULL);
-        	adapter_set_pairable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), NULL);
-        	g_print("connected\n");	
-        }
-        g_variant_unref(connected_variant);
-    }
+    // if(connected_variant)
+    // {
+    //     const gboolean connected = g_variant_get_boolean(connected_variant);
+    //     if(!connected)
+    //     {
+    //         g_print("disconnected\n");
+    //     	adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL);
+    //     	adapter_set_pairable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL);
+    //     }
+    //     else
+    //     {
+    //     	adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), NULL);
+    //     	adapter_set_pairable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), NULL);
+    //     	g_print("connected\n");	
+    //     }
+    //     g_variant_unref(connected_variant);
+    // }
 
 
     GVariant *properties = NULL;
