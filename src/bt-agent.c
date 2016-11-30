@@ -291,7 +291,7 @@ int main(int argc, char *argv[])
 	guint prop_sig_sub_id = g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.Properties", "PropertiesChanged", adapter_get_dbus_object_path(adapter), NULL, G_DBUS_SIGNAL_FLAGS_NONE, _adapter_property_changed, NULL, NULL);
 
     exit_if_error(error);
-
+    while(1);
 	AgentManager *agent_manager = agent_manager_new();
 
 	if(daemon_arg)
