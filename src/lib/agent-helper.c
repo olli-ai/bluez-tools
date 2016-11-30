@@ -46,6 +46,10 @@ static const gchar *_bt_agent_introspect_xml =
 "<method name=\"AuthorizeService\">\n\t\t\t<arg name=\"device\" direction=\"in\" type=\"o\"/>\n\t\t\t<arg name=\"uuid\" direction=\"in\" type=\"s\"/>\n\t\t</method>\n\t\t"
 "<method name=\"Cancel\">\n\t\t</method>\n\t"
 "</interface>\n"
+"<interface name=\"org.bluez.NetworkServer1\"><method name=\"Register\"><arg name=\"uuid\" type=\"s\" direction=\"in\"/>"
+"<arg name=\"bridge\" type=\"s\" direction=\"in\"/>"
+"</method><method name=\"Unregister\"><arg name=\"uuid\" type=\"s\" direction=\"in\"/>"
+"</method></interface>"
 "</node>\n";
 static guint _bt_agent_registration_id = 0;
 static GHashTable *_pin_hash_table = NULL;
