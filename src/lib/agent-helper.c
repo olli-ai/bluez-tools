@@ -46,6 +46,21 @@ static const gchar *_bt_agent_introspect_xml =
 "<method name=\"AuthorizeService\">\n\t\t\t<arg name=\"device\" direction=\"in\" type=\"o\"/>\n\t\t\t<arg name=\"uuid\" direction=\"in\" type=\"s\"/>\n\t\t</method>\n\t\t"
 "<method name=\"Cancel\">\n\t\t</method>\n\t"
 "</interface>\n"
+"<interface name='org.bluez.Profile1' >"
+// Release()    
+"    <method name='Release'>"
+"    </method>"
+// [error] NewConnection( object device, fd, dict fd_properties )
+"    <method name='NewConnection'>"
+"      <arg type='o' name='device' direction='in' />"
+"      <arg type='h' name='fd' direction='in' />"
+"      <arg type='a{sv}' name='fd_properties' direction='in' />"
+"    </method>"
+// [error] RequestDisconnect( object device )
+"    <method name='RequestDisconnection'>"
+"      <arg type='o' name='device' direction='in' />"
+"    </method>"
+"  </interface>"
 "</node>\n";
 static guint _bt_agent_registration_id = 0;
 static GHashTable *_pin_hash_table = NULL;
