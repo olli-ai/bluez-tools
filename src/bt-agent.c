@@ -126,7 +126,7 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 	        }
 	        g_variant_unref(connected_variant);
 	    }
-
+		g_variant_unref(changed_properties);
     }
 
 
@@ -157,8 +157,6 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 
     }
     #endif
-
-    g_variant_unref(changed_properties);
 }
 
 // Not touching this for now. It seems to work.
