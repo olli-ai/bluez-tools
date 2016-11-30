@@ -93,6 +93,8 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
         if(!connected)
         {
             g_print("disconnected\n");
+        	adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL);
+        	adapter_set_pairable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL);
         }
         else
         {
