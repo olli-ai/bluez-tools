@@ -87,7 +87,7 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
     
     GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
 	
-    GVariant *properties_variant = g_variant_lookup_value(changed_properties, "properties", NULL);
+    GVariant *properties_variant = g_variant_lookup_value(changed_properties, "properties", G_VARIANT_TYPE_STRING);
     g_print("[%s]: %s\n",__FUNCTION__, changed_properties);
     
     // if(discovering_variant)
