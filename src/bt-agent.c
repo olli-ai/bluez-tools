@@ -98,7 +98,18 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
     if (g_strcmp0(str_object_path, DEVICE_DBUS_INTERFACE) == 0)
     {
 		GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
+
 		Device *device = device_new(object_path);
+
+		if(g_variant_get_boolean(g_variant_lookup_value(device_properties, "Connected", NULL)))
+		{
+			g_print("device Connected\n");
+		}
+		else
+		{
+			g_print("device Disconnected\n");
+		}
+		
 		GVariant * device_properties = device_get_properties(device, NULL);
 		g_print("  Connected: %d\n", g_variant_lookup_value(device_properties, "Connected", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(device_properties, "Connected", NULL)) : FALSE);
 		g_print("  Name: %s\n", g_variant_lookup_value(device_properties, "Name", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(device_properties, "Name", NULL), NULL) : NULL);
