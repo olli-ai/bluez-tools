@@ -94,7 +94,7 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
     const gchar *str_object_path = g_variant_get_string(arg0, NULL);
     g_variant_unref(arg0);
 
-    g_print("%s:%s\n", __FUNCTION__, object_path);
+    g_print("%s:%s %s\n", __FUNCTION__, object_path, str_object_path);
     if (g_strcmp0(str_object_path, DEVICE_DBUS_INTERFACE) == 0)
     {
 		GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
