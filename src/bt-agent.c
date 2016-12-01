@@ -113,7 +113,7 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 			}
 			else
 			{
-				if(g_strcmp0(current_device, g_variant_get_string(g_variant_lookup_value(device_properties, "Address", NULL))) != 0)
+				if(g_strcmp0(current_device, g_variant_get_string(g_variant_lookup_value(device_properties, "Address", NULL), NULL)) != 0)
 				{
 					g_print("Already Connected to a device, removing the new device\n");
 					device_disconnect(device, NULL);
