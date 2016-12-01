@@ -94,7 +94,7 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
     const gchar *str_object_path = g_variant_get_string(arg0, NULL);
     g_variant_unref(arg0);
 
-    g_print("%s:%s %s %s\n", __FUNCTION__, str_object_path,sender_name, interface_name);
+    g_print("%s:%s %s %s\n", __FUNCTION__, object_path,sender_name, interface_name);
     if (g_strcmp0(str_object_path, DEVICE_DBUS_INTERFACE) == 0)
     {
 		GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
@@ -304,7 +304,7 @@ int main(int argc, char *argv[])
 	g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.Properties", "PropertiesChanged", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE, _adapter_property_changed, adapter, NULL);
     exit_if_error(error);
 
-	 g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.Properties", "DeviceCreated", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE, _device_created, NULL, NULL);
+	g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.Properties", "DeviceCreated", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE, _device_created, NULL, NULL);
     exit_if_error(error);
     
 	AgentManager *agent_manager = agent_manager_new();
