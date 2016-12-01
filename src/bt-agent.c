@@ -47,6 +47,11 @@ static GMainLoop *mainloop = NULL;
 static GHashTable *pin_hash_table = NULL;
 static gchar *pin_arg = NULL;
 
+static void _device_created(GDBusConnection *connection, const gchar *sender_name, const gchar *object_path, const gchar *interface_name, const gchar *signal_name, GVariant *parameters, gpointer user_data)
+{
+	g_print("%s:\n", __FUNCTION__);
+}
+
 static void _manager_device_found(GDBusConnection *connection, const gchar *sender_name, const gchar *object_path, const gchar *interface_name, const gchar *signal_name, GVariant *parameters, gpointer user_data)
 {
     g_assert(user_data != NULL);
@@ -297,8 +302,11 @@ int main(int argc, char *argv[])
     exit_if_error(error);
     g_print("%s\n", adapter_get_dbus_object_path(adapter));
 	guint prop_sig_sub_id = g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.Properties", "PropertiesChanged", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE, _adapter_property_changed, adapter, NULL);
-
     exit_if_error(error);
+
+	guint prop_sig_sub_id = g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.Properties", "DeviceCreated", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE, _device_created, NULL, NULL);
+    exit_if_error(error);
+    
 	AgentManager *agent_manager = agent_manager_new();
 
 	if(daemon_arg)
