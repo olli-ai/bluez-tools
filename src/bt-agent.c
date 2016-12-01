@@ -108,7 +108,7 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 			// g_print("device Connected\n");
 			if(current_device == NULL)
 			{
-				current_device = g_variant_get_string(g_variant_lookup_value(device_properties, "Icon", NULL), NULL);
+				current_device = g_variant_get_string(g_variant_lookup_value(device_properties, "Address", NULL), NULL);
 				g_print(" Connected to %s", current_device);
 			}
 			else
