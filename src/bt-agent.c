@@ -105,7 +105,6 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 
 		if(g_variant_get_boolean(g_variant_lookup_value(device_properties, "Connected", NULL)))
 		{
-			// g_print("device Connected\n");
 			if(current_device == NULL)
 			{
 				current_device = g_variant_get_string(g_variant_lookup_value(device_properties, "Address", NULL), NULL);
@@ -125,6 +124,10 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 		else
 		{
 			g_print("device Disconnected\n");
+			if(g_strcmp0(current_device, g_variant_get_string(g_variant_lookup_value(device_properties, "Address", NULL), NULL)) == 0)
+			{
+				current_device = NULL;
+			}
 		}
 
 		//g_print("  Connected: %d\n", g_variant_lookup_value(device_properties, "Connected", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(device_properties, "Connected", NULL)) : FALSE);
