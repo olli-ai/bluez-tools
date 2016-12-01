@@ -109,6 +109,9 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 			{
 				current_device = g_variant_get_string(g_variant_lookup_value(device_properties, "Address", NULL), NULL);
 				g_print(" Connected to %s", current_device);
+
+				adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), &error);
+				exit_if_error(error);
 			}
 			else
 			{
@@ -127,6 +130,8 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 			if(g_strcmp0(current_device, g_variant_get_string(g_variant_lookup_value(device_properties, "Address", NULL), NULL)) == 0)
 			{
 				current_device = NULL;
+				adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), &error);
+				exit_if_error(error);
 			}
 		}
 
