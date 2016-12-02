@@ -107,7 +107,7 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 		{
 			if(current_device == NULL)
 			{
-				current_device = object_path;
+				current_device = g_strdup (object_path);
 				g_print(" Connected to %s", current_device);
 
 				adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), NULL);
@@ -119,7 +119,8 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 					g_print("Already Connected to a device, removing the old device\n");
 					Device *kicked_device = device_new(current_device);
 					device_disconnect(kicked_device, NULL);
-					current_device = object_path;
+					g_free(current_device);
+					current_device = g_strdup (object_path);
 				}
 				
 			}
@@ -130,6 +131,7 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 			g_print("device Disconnected\n");
 			if(g_strcmp0(current_device, object_path) == 0)
 			{
+				g_free(current_device);
 				current_device = NULL;
 				adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), NULL);
 			}
