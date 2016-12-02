@@ -73,7 +73,7 @@ static const gchar *_find_device_pin(const gchar *device_path);
 
 static void _bt_agent_method_call_func(GDBusConnection *connection, const gchar *sender, const gchar *object_path, const gchar *interface_name, const gchar *method_name, GVariant *parameters, GDBusMethodInvocation *invocation, gpointer user_data)
 {
-    g_print("%s%s\n", method_name, g_variant_print(parameters, FALSE));
+//    g_print("%s%s\n", method_name, g_variant_print(parameters, FALSE));
 
     if (g_strcmp0(method_name, "AuthorizeService") == 0)
     {
