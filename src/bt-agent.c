@@ -95,7 +95,11 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
     const gchar *str_object_path = g_variant_get_string(arg0, NULL);
     g_variant_unref(arg0);
 
+<<<<<<< Updated upstream
     //g_print("%s:%s %s\n", __FUNCTION__, object_path, str_object_path);
+=======
+    // g_print("%s:%s %s\n", __FUNCTION__, object_path, str_object_path);
+>>>>>>> Stashed changes
     if (g_strcmp0(str_object_path, DEVICE_DBUS_INTERFACE) == 0)
     {
 		GVariant *changed_properties = g_variant_get_child_value(parameters, 1);
@@ -116,6 +120,8 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 			{
 				if(g_strcmp0(current_device, object_path) != 0)
 				{
+					g_print("  Trusted: %d\n", g_variant_lookup_value(device_properties, "Trusted", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(device_properties, "Trusted", NULL)) : FALSE);
+					g_print("Replacing the old device by the new one\n");
 					Device *kicked_device = device_new(current_device);
 					device_disconnect(kicked_device, NULL);
 					g_free(current_device);
