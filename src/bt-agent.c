@@ -116,8 +116,9 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 			{
 				if(g_strcmp0(current_device, g_variant_get_string(g_variant_lookup_value(device_properties, "Address", NULL), NULL)) != 0)
 				{
-					g_print("Already Connected to a device, removing the new device\n");
-					device_disconnect(device, NULL);
+					g_print("Already Connected to a device, removing the old device\n");
+					device_disconnect(current_device, NULL);
+					current_device = device;
 				}
 				
 			}
