@@ -138,16 +138,6 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 			}
 		}
 
-		//g_print("  Connected: %d\n", g_variant_lookup_value(device_properties, "Connected", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(device_properties, "Connected", NULL)) : FALSE);
-		//g_print("  Name: %s\n", g_variant_lookup_value(device_properties, "Name", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(device_properties, "Name", NULL), NULL) : NULL);
-		// g_print("  Alias: %s\n", g_variant_lookup_value(device_properties, "Alias", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(device_properties, "Alias", NULL), NULL) : NULL);
-		//g_print("  Address: %s\n", g_variant_lookup_value(device_properties, "Address", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(device_properties, "Address", NULL), NULL) : NULL);
-		// g_print("  Icon: %s\n", g_variant_lookup_value(device_properties, "Icon", NULL) != NULL ? g_variant_get_string(g_variant_lookup_value(device_properties, "Icon", NULL), NULL) : NULL);
-		// g_print("  Class: 0x%x\n", g_variant_lookup_value(device_properties, "Class", NULL) != NULL ? g_variant_get_uint32(g_variant_lookup_value(device_properties, "Class", NULL)) : 0x0);
-		// g_print("  LegacyPairing: %d\n", g_variant_lookup_value(device_properties, "LegacyPairing", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(device_properties, "LegacyPairing", NULL)) : FALSE);
-		// g_print("  Paired: %d\n", g_variant_lookup_value(device_properties, "Paired", NULL) != NULL ? g_variant_get_boolean(g_variant_lookup_value(device_properties, "Paired", NULL)) : FALSE);
-		//g_print("  RSSI: %d\n", g_variant_lookup_value(device_properties, "RSSI", NULL) != NULL ? g_variant_get_int16(g_variant_lookup_value(device_properties, "RSSI", NULL)) : 0x0);
-		//g_print("\n");
 		g_variant_unref(device_properties);
 
 		g_variant_unref(changed_properties);
@@ -269,7 +259,6 @@ int main(int argc, char *argv[])
 	setlocale(LC_CTYPE, "");
 
 	// Deprecated
-	// g_type_init();
 	dbus_init();
 
 	context = g_option_context_new(" - a bluetooth agent");
@@ -357,11 +346,11 @@ int main(int argc, char *argv[])
 
 	exit_if_error(error);
 
-        agent_manager_register_agent(agent_manager, AGENT_PATH, capability_arg, &error);
+    agent_manager_register_agent(agent_manager, AGENT_PATH, capability_arg, &error);
 	exit_if_error(error);
 	g_print("Agent registered\n");
         
-        agent_manager_request_default_agent(agent_manager, AGENT_PATH, &error);
+    agent_manager_request_default_agent(agent_manager, AGENT_PATH, &error);
 	exit_if_error(error);
         g_print("Default agent requested\n");
 
@@ -408,14 +397,14 @@ int main(int argc, char *argv[])
 		g_main_loop_run(mainloop);
 	}
 
-       syslog(LOG_NOTICE,"debug\n"); 
+	syslog(LOG_NOTICE,"debug\n"); 
 	g_main_loop_unref(mainloop);
 
-        unregister_agent_callbacks(NULL);
-        g_object_unref(agent_manager);
+    unregister_agent_callbacks(NULL);
+    g_object_unref(agent_manager);
 	g_object_unref(manager);
 
-       dbus_disconnect();
+	dbus_disconnect();
 
 	exit(EXIT_SUCCESS);
 }
