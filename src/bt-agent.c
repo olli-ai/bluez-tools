@@ -40,7 +40,7 @@
 #include "lib/helpers.h"
 #include "lib/agent-helper.h"
 #include "lib/bluez-api.h"
-
+#include <syslog.h>
 static gboolean need_unregister = TRUE;
 static GMainLoop *mainloop = NULL;
 
@@ -351,7 +351,7 @@ int main(int argc, char *argv[])
 	AgentManager *agent_manager = agent_manager_new();
 
 	if(daemon_arg)
-		register_agent_callbacks(FALSE, pin_hash_table, mainloop, &error);
+		register_agent_callbacks(TRUE, pin_hash_table, mainloop, &error);
 	else
 		register_agent_callbacks(TRUE, pin_hash_table, mainloop, &error);
 
@@ -385,6 +385,8 @@ int main(int argc, char *argv[])
 		close(STDIN_FILENO);
 		close(STDOUT_FILENO);
 		close(STDERR_FILENO);
+		openlog ("bt-agent", LOG_PID, LOG_DAEMON);
+		syslog(LOG_NOTICE,"start bt-agent\n");
 	}
 
 	/* Add SIGTERM/SIGINT/SIGUSR1 handlers */
@@ -406,13 +408,14 @@ int main(int argc, char *argv[])
 		g_main_loop_run(mainloop);
 	}
 
+       syslog(LOG_NOTICE,"debug\n"); 
 	g_main_loop_unref(mainloop);
 
         unregister_agent_callbacks(NULL);
         g_object_unref(agent_manager);
 	g_object_unref(manager);
 
-	dbus_disconnect();
+       dbus_disconnect();
 
 	exit(EXIT_SUCCESS);
 }
