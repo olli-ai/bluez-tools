@@ -46,6 +46,7 @@ static GMainLoop *mainloop = NULL;
 
 static GHashTable *pin_hash_table = NULL;
 static gchar *pin_arg = NULL;
+extern int wait_button_event(void);
 
 static void _device_created(GDBusConnection *connection, const gchar *sender_name, const gchar *object_path, const gchar *interface_name, const gchar *signal_name, GVariant *parameters, gpointer user_data)
 {
@@ -318,6 +319,7 @@ int main(int argc, char *argv[])
 		_read_pin_file(pin_arg, pin_hash_table, TRUE);
 	}
 
+    wait_button_event();
 	mainloop = g_main_loop_new(NULL, FALSE);
 
 	Manager *manager = g_object_new(MANAGER_TYPE, NULL);
