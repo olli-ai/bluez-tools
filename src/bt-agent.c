@@ -250,7 +250,15 @@ static GOptionEntry entries[] = {
 	{"daemon", 'd', 0, G_OPTION_ARG_NONE, &daemon_arg, "Run in background (as daemon)"},
 	{NULL}
 };
-
+void *setTimeOut(void *data)
+{
+   printf("%s\n", __FUNCTION__);
+   while(1)
+   {
+       g_print("set timeout \n");
+       sleep(1);
+   }
+}
 int main(int argc, char *argv[])
 {
 	GError *error = NULL;
@@ -318,8 +326,12 @@ int main(int argc, char *argv[])
 		pin_hash_table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 		_read_pin_file(pin_arg, pin_hash_table, TRUE);
 	}
+            
+        wait_button_event();
+        
+        GThread *setTimeOutThread = g_thread_new("setTimeOut", (GThreadFunc)setTimeOut, NULL);
+        g_thread_join(setTimeOutThread);
 
-    wait_button_event();
 	mainloop = g_main_loop_new(NULL, FALSE);
 
 	Manager *manager = g_object_new(MANAGER_TYPE, NULL);
