@@ -20,7 +20,7 @@
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
-
+#define _BSD_SOURCE
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -43,7 +43,8 @@
 #include <syslog.h>
 static gboolean need_unregister = TRUE;
 static GMainLoop *mainloop = NULL;
-
+static guint8 device_count = 0;
+static gboolean isDeviceConnected = FALSE;
 static GHashTable *pin_hash_table = NULL;
 static gchar *pin_arg = NULL;
 extern int wait_button_event(void);
@@ -85,6 +86,13 @@ static void _manager_device_found(GDBusConnection *connection, const gchar *send
     g_variant_unref(interfaces_and_properties);
 }
 
+void call_shell_cmd(void)
+{
+	char *buffer[100];
+	FILE* file = (FILE *)popen("/usr/bin/mpg321 /etc/sound/beeeep.mp3 > /dev/null 2>&1", "r");
+	fgets((char *)buffer, 100, file);
+	// printf("%s:%s\n",__FUNCTION__, buffer);
+}
 
 static void _adapter_property_changed(GDBusConnection *connection, const gchar *sender_name, const gchar *object_path, const gchar *interface_name, const gchar *signal_name, GVariant *parameters, gpointer user_data)
 {
@@ -111,6 +119,9 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 				current_device = g_strdup (object_path);
 				g_print("Connected to a new device\n");
 
+		        syslog(LOG_NOTICE,"Connected to a new device\n");
+				isDeviceConnected = TRUE;
+				device_count++;
 				adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(FALSE)), NULL);
 			}
 			else
@@ -131,6 +142,8 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 		else
 		{
 			g_print("device Disconnected\n");
+		    syslog(LOG_NOTICE,"device Disconnected\n");
+		    device_count --;
 			if(g_strcmp0(current_device, object_path) == 0)
 			{
 				g_free(current_device);
@@ -236,6 +249,7 @@ static void signal_handler(int sig)
 	}
         else if (sig == SIGTERM || sig == SIGINT)
         {
+	    syslog(LOG_NOTICE,"kill process\n");
             if (g_main_loop_is_running(mainloop))
                 g_main_loop_quit(mainloop);
 	}
@@ -252,121 +266,40 @@ static GOptionEntry entries[] = {
 };
 void *setTimeOut(void *data)
 {
-   printf("%s\n", __FUNCTION__);
+   static int count = 0;
+   // printf("%s\n", __FUNCTION__);
    while(1)
    {
-       g_print("set timeout \n");
+   		if(device_count > 0)
+   		{
+   			count = 0;
+   		}
+   		else
+   		{
+   			count++;
+   		}
+
+   		if(count > 30)
+   		{
+   			g_print("session timeout %d\n", count);
+   			count = 0;
+   			// g_main_loop_quit(mainloop);
+   		}
+       // count ++;
+       // if(count > 30 && isDeviceConnected == FALSE){
+       //       g_main_loop_quit(mainloop);
+       // }
+       // else if(count < 30 && isDeviceConnected == TRUE) {
+       //     g_thread_exit(NULL);
+       // }
        sleep(1);
    }
 }
+
 int main(int argc, char *argv[])
 {
 	GError *error = NULL;
-	GOptionContext *context;
-
-	/* Query current locale */
-	setlocale(LC_CTYPE, "");
-
-	// Deprecated
-	dbus_init();
-
-	context = g_option_context_new(" - a bluetooth agent");
-	g_option_context_add_main_entries(context, entries, NULL);
-	g_option_context_set_summary(context, "Version "PACKAGE_VERSION);
-	g_option_context_set_description(context,
-			"`capability` can be one of:\n"
-			"   DisplayOnly\n"
-			"   DisplayYesNo (default)\n"
-			"   KeyboardOnly\n"
-			"   NoInputNoOutput\n\n"
-			"Report bugs to <"PACKAGE_BUGREPORT">."
-			"Project home page <"PACKAGE_URL">."
-			);
-
-	if (!g_option_context_parse(context, &argc, &argv, &error)) {
-		g_print("%s: %s\n", g_get_prgname(), error->message);
-		g_print("Try `%s --help` for more information.\n", g_get_prgname());
-		exit(EXIT_FAILURE);
-	}
-
-	if (capability_arg) {
-		if (
-				g_strcmp0(capability_arg, "DisplayOnly") != 0 &&
-				g_strcmp0(capability_arg, "DisplayYesNo") != 0 &&
-				g_strcmp0(capability_arg, "KeyboardOnly") != 0 &&
-				g_strcmp0(capability_arg, "NoInputNoOutput") != 0
-				) {
-			g_print("%s: Invalid capability: %s\n", g_get_prgname(), capability_arg);
-			g_print("Try `%s --help` for more information.\n", g_get_prgname());
-			exit(EXIT_FAILURE);
-		}
-	} else {
-		capability_arg = "DisplayYesNo"; // default value
-	}
-
-	g_option_context_free(context);
-
-	if (!dbus_system_connect(&error))
-        {
-		g_printerr("Couldn't connect to DBus system bus: %s\n", error->message);
-		exit(EXIT_FAILURE);
-	}
-
-	/* Check, that bluetooth daemon is running */
-	if (!intf_supported(BLUEZ_DBUS_SERVICE_NAME, MANAGER_DBUS_PATH, MANAGER_DBUS_INTERFACE))
-        {
-		g_printerr("%s: bluez service is not found\n", g_get_prgname());
-		g_printerr("Did you forget to run bluetoothd?\n");
-		exit(EXIT_FAILURE);
-	}
-        
-	/* Read PIN's file */
-	if (pin_arg)
-        {
-		pin_hash_table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-		_read_pin_file(pin_arg, pin_hash_table, TRUE);
-	}
-            
-        wait_button_event();
-        
-        GThread *setTimeOutThread = g_thread_new("setTimeOut", (GThreadFunc)setTimeOut, NULL);
-        g_thread_join(setTimeOutThread);
-
-	mainloop = g_main_loop_new(NULL, FALSE);
-
-	Manager *manager = g_object_new(MANAGER_TYPE, NULL);
-	
-	Adapter *adapter = find_adapter(NULL, &error);
-	exit_if_error(error);
-
-	adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), &error);
-	exit_if_error(error);
-
-	g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.ObjectManager", "InterfacesAdded", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE, _manager_device_found, (gpointer) adapter_get_dbus_object_path(adapter), NULL);
-    exit_if_error(error);
-    g_print("%s\n", adapter_get_dbus_object_path(adapter));
-	g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.Properties", "PropertiesChanged", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE, _adapter_property_changed, adapter, NULL);
-    exit_if_error(error);
-
-	g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.Properties", "DeviceCreated", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE, _device_created, NULL, NULL);
-    exit_if_error(error);
-    
-	AgentManager *agent_manager = agent_manager_new();
-
-	if(daemon_arg)
-		register_agent_callbacks(TRUE, pin_hash_table, mainloop, &error);
-	else
-		register_agent_callbacks(TRUE, pin_hash_table, mainloop, &error);
-
-	exit_if_error(error);
-
-    agent_manager_register_agent(agent_manager, AGENT_PATH, capability_arg, &error);
-	exit_if_error(error);
-	g_print("Agent registered\n");
-        
-    agent_manager_request_default_agent(agent_manager, AGENT_PATH, &error);
-	exit_if_error(error);
-        g_print("Default agent requested\n");
+    gchar *capability_arg = "NoInputNoOutput";
 
 	if (daemon_arg) {
 		pid_t pid, sid;
@@ -392,33 +325,99 @@ int main(int argc, char *argv[])
 		syslog(LOG_NOTICE,"start bt-agent\n");
 	}
 
-	/* Add SIGTERM/SIGINT/SIGUSR1 handlers */
-	struct sigaction sa;
-	memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = signal_handler;
-	sigaction(SIGTERM, &sa, NULL);
-	sigaction(SIGINT, &sa, NULL);
-	sigaction(SIGUSR1, &sa, NULL);
+	/* Query current locale */
+	setlocale(LC_CTYPE, "");
 
-	g_main_loop_run(mainloop);
+	while(1)
+	{
+		// Deprecated
+		dbus_init();
 
-	if (need_unregister) {
-                g_print("unregistering agent...\n");
-                agent_manager_unregister_agent(agent_manager, AGENT_PATH, &error);
+		if (!dbus_system_connect(&error))
+		{
+			g_printerr("Couldn't connect to DBus system bus: %s\n", error->message);
+			exit(EXIT_FAILURE);
+		}
+
+		/* Check, that bluetooth daemon is running */
+		if (!intf_supported(BLUEZ_DBUS_SERVICE_NAME, MANAGER_DBUS_PATH, MANAGER_DBUS_INTERFACE))
+		{
+			g_printerr("%s: bluez service is not found\n", g_get_prgname());
+			g_printerr("Did you forget to run bluetoothd?\n");
+			exit(EXIT_FAILURE);
+		}
+	        
+	    wait_button_event();
+	    call_shell_cmd();      
+	    GThread *setTimeOutThread = g_thread_new("setTimeOut", (GThreadFunc)setTimeOut, NULL);       
+
+		mainloop = g_main_loop_new(NULL, FALSE);
+
+		Manager *manager = g_object_new(MANAGER_TYPE, NULL);
+		
+		Adapter *adapter = find_adapter(NULL, &error);
 		exit_if_error(error);
 
-		/* Waiting for AgentReleased signal */
+		adapter_set_discoverable(adapter, g_variant_get_boolean(g_variant_new_boolean(TRUE)), &error);
+		exit_if_error(error);
+
+		g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.ObjectManager", "InterfacesAdded", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE, _manager_device_found, (gpointer) adapter_get_dbus_object_path(adapter), NULL);
+	    exit_if_error(error);
+	    g_print("%s\n", adapter_get_dbus_object_path(adapter));
+		g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.Properties", "PropertiesChanged", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE, _adapter_property_changed, adapter, NULL);
+	    exit_if_error(error);
+
+		g_dbus_connection_signal_subscribe(system_conn, "org.bluez", "org.freedesktop.DBus.Properties", "DeviceCreated", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE, _device_created, NULL, NULL);
+	    exit_if_error(error);
+	    
+		AgentManager *agent_manager = agent_manager_new();
+
+		if(daemon_arg)
+			register_agent_callbacks(TRUE, pin_hash_table, mainloop, &error);
+		else
+			register_agent_callbacks(TRUE, pin_hash_table, mainloop, &error);
+
+		exit_if_error(error);
+
+	    agent_manager_register_agent(agent_manager, AGENT_PATH, capability_arg, &error);
+		exit_if_error(error);
+		g_print("Agent registered\n"); 
+		syslog(LOG_NOTICE,"Agent registered\n"); 
+
+	        agent_manager_request_default_agent(agent_manager, AGENT_PATH, &error);
+		exit_if_error(error);
+	        g_print("Default agent requested\n");
+		syslog(LOG_NOTICE,"Default agent requested\n"); 
+
+
+		/* Add SIGTERM/SIGINT/SIGUSR1 handlers */
+		struct sigaction sa;
+		memset(&sa, 0, sizeof(sa));
+		sa.sa_handler = signal_handler;
+		sigaction(SIGTERM, &sa, NULL);
+		sigaction(SIGINT, &sa, NULL);
+		sigaction(SIGUSR1, &sa, NULL);
+
 		g_main_loop_run(mainloop);
+
+		if (need_unregister) {
+			g_print("unregistering agent...\n");
+			agent_manager_unregister_agent(agent_manager, AGENT_PATH, &error);
+			exit_if_error(error);
+
+			/* Waiting for AgentReleased signal */
+			// g_main_loop_run(mainloop);
+		}
+
+		g_main_loop_unref(mainloop);
+
+	    unregister_agent_callbacks(NULL);
+	    g_object_unref(agent_manager);
+		g_object_unref(manager);
+
+		dbus_disconnect();
+		exit(EXIT_SUCCESS);
 	}
 
-	syslog(LOG_NOTICE,"debug\n"); 
-	g_main_loop_unref(mainloop);
-
-    unregister_agent_callbacks(NULL);
-    g_object_unref(agent_manager);
-	g_object_unref(manager);
-
-	dbus_disconnect();
-
-	exit(EXIT_SUCCESS);
+	
 }
