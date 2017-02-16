@@ -47,6 +47,7 @@ static guint8 device_count = 0;
 static gboolean isDeviceConnected = FALSE;
 static GHashTable *pin_hash_table = NULL;
 static gchar *pin_arg = NULL;
+static
 extern int wait_button_event(void);
 
 static void _device_created(GDBusConnection *connection, const gchar *sender_name, const gchar *object_path, const gchar *interface_name, const gchar *signal_name, GVariant *parameters, gpointer user_data)
@@ -141,7 +142,9 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
 		}
 		else
 		{
-			g_print("device Disconnected\n");
+			static int disconnect_count = 0;
+			disconnect_count++;
+			g_print("device Disconnected %d\n", disconnect_count);
 		    syslog(LOG_NOTICE,"device Disconnected\n");
 		    device_count --;
 			if(g_strcmp0(current_device, object_path) == 0)
@@ -158,85 +161,6 @@ static void _adapter_property_changed(GDBusConnection *connection, const gchar *
     }
 }
 
-// Not touching this for now. It seems to work.
-static void _read_pin_file(const gchar *filename, GHashTable *pin_hash_table, gboolean first_run)
-{
-	g_assert(filename != NULL && strlen(filename) > 0);
-	g_assert(pin_hash_table != NULL);
-
-	GStatBuf sbuf;
-	memset(&sbuf, 0, sizeof(sbuf));
-	if (g_stat(filename, &sbuf) != 0) {
-		if (first_run) {
-			g_printerr("%s: %s\n", filename, strerror(errno));
-			exit(EXIT_FAILURE);
-		} else {
-			return;
-		}
-	}
-	if (!S_ISREG(sbuf.st_mode)) {
-		if (first_run) {
-			g_printerr("%s: It's not a regular file\n", filename);
-			exit(EXIT_FAILURE);
-		} else {
-			return;
-		}
-	}
-	if (sbuf.st_mode & S_IROTH) {
-		if (first_run)
-			g_print("Warning! %s is world readable!\n", filename);
-	}
-
-	FILE *fp = g_fopen(filename, "r");
-	if (!fp) {
-		if (first_run) {
-			g_printerr("%s: %s\n", filename, strerror(errno));
-			exit(EXIT_FAILURE);
-		} else {
-			return;
-		}
-	}
-
-	g_hash_table_remove_all(pin_hash_table);
-
-	gchar *line = NULL;
-	size_t len = 0;
-	ssize_t read;
-	guint n = 0;
-	GRegex *regex = g_regex_new("^(\\S+)\\s+(\\S+)$", 0, 0, NULL);
-
-	while ((read = getline(&line, &len, fp)) != -1) {
-		n++;
-
-		if (g_regex_match_simple("^\\s*(#|$)", line, 0, 0))
-			continue;
-
-		GMatchInfo *match_info;
-		if (g_regex_match(regex, line, 0, &match_info)) {
-			gchar **t = g_match_info_fetch_all(match_info);
-			/* Convert MAC to upper case */
-			if (g_regex_match_simple("^([0-9a-fA-F]{2}(:|$)){6}$", t[1], 0, 0))
-				g_hash_table_insert(pin_hash_table, g_ascii_strup(t[1], -1), g_strdup(t[2]));
-			else
-				g_hash_table_insert(pin_hash_table, g_strdup(t[1]), g_strdup(t[2]));
-			g_strfreev(t);
-		} else {
-			if (first_run)
-				g_print("%d: Invalid line (ignored)\n", n);
-		}
-		g_match_info_free(match_info);
-	}
-
-	g_regex_unref(regex);
-	if (line)
-		g_free(line);
-	fclose(fp);
-
-	first_run = FALSE;
-
-	return;
-}
-
 static void signal_handler(int sig)
 {
 	g_message("%s received", sig == SIGTERM ? "SIGTERM" : (sig == SIGUSR1 ? "SIGUSR1" : "SIGINT"));
@@ -245,11 +169,11 @@ static void signal_handler(int sig)
         {
             /* Re-read PIN's file */
             g_print("Re-reading PIN's file\n");
-            _read_pin_file(pin_arg, pin_hash_table, FALSE);
+            // _read_pin_file(pin_arg, pin_hash_table, FALSE);
 	}
         else if (sig == SIGTERM || sig == SIGINT)
         {
-	    syslog(LOG_NOTICE,"kill process\n");
+	    	syslog(LOG_NOTICE,"kill process\n");
             if (g_main_loop_is_running(mainloop))
                 g_main_loop_quit(mainloop);
 	}
@@ -283,6 +207,8 @@ void *setTimeOut(void *data)
    		{
    			g_print("session timeout %d\n", count);
    			count = 0;
+            if (g_main_loop_is_running(mainloop))
+                g_main_loop_quit(mainloop);
    			// g_main_loop_quit(mainloop);
    		}
        // count ++;
@@ -384,9 +310,9 @@ int main(int argc, char *argv[])
 		g_print("Agent registered\n"); 
 		syslog(LOG_NOTICE,"Agent registered\n"); 
 
-	        agent_manager_request_default_agent(agent_manager, AGENT_PATH, &error);
+        agent_manager_request_default_agent(agent_manager, AGENT_PATH, &error);
 		exit_if_error(error);
-	        g_print("Default agent requested\n");
+        g_print("Default agent requested\n");
 		syslog(LOG_NOTICE,"Default agent requested\n"); 
 
 
@@ -416,7 +342,7 @@ int main(int argc, char *argv[])
 		g_object_unref(manager);
 
 		dbus_disconnect();
-		exit(EXIT_SUCCESS);
+		// exit(EXIT_SUCCESS);
 	}
 
 	
